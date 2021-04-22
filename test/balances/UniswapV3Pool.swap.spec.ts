@@ -187,7 +187,7 @@ let TEST_POOLS: PoolTestCase[] = [
     ],
     swapTests: [
       {
-        description: "swap 2055 DAI without price limit to empty ETH liquidity",
+        description: "swap 2055 DAI without price limit to empty DAI liquidity",
         exactOut: true,
         zeroForOne: true,
         amount1: expandTo18Decimals(2055),
