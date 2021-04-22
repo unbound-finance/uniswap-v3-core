@@ -48,7 +48,7 @@ const TEST_CASES : PoolTestCase[] = [
     ]
   },
   {
-    description: "init mint - price: 100 - fee: LOW - one position - range: -1000:1000, liq: 2000",
+    description: "init mint - price: 100 - fee: LOW - one position - range: -1000:1000, liq: 100",
     feeAmount: FeeAmount.LOW,
     startingPrice: encodePriceSqrt(1, 1),
     tickSpacing: TICK_SPACINGS[FeeAmount.LOW],

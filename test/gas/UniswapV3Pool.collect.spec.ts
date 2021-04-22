@@ -228,13 +228,7 @@ describe('UniswapV3Pool swap tests', () => {
               (await pool.slot0()).sqrtPriceX96,
             ])
 
-            console.log("\t\tpoolBalance0BeforeMint:", decodeBigNumberWithDecimals(poolBalance0BeforeMint))
-            console.log("\t\tpoolBalance1BeforeMint:", decodeBigNumberWithDecimals(poolBalance1BeforeMint))
-            console.log("\t\tSqrtPriceBefore:", poolSqrtPriceBefore.toString())
-            console.log("\t\tPriceBefore:", decodeBigNumberWithDecimals(decodeSqrtPrice(poolSqrtPriceBefore)))
-            
-
-            console.log("\t\t ... minting ...")
+            console.log("\t ... minting ...")
             // mint all positions
             for (const position of poolCase.positions) {
               let tx = await poolFunctions.mint(wallet.address, position.tickLower, position.tickUpper, position.liquidity)
@@ -245,11 +239,6 @@ describe('UniswapV3Pool swap tests', () => {
               token1.balanceOf(pool.address),
               (await pool.slot0()).sqrtPriceX96,
             ])
-
-            console.log("\t\tpoolBalance0AfterMint:", decodeBigNumberWithDecimals(poolBalance0AfterMint))
-            console.log("\t\tpoolBalance1AfterMint:", decodeBigNumberWithDecimals(poolBalance1AfterMint))
-            console.log("\t\tSqrtPriceAfterMint:", poolSqrtPriceAfter.toString())
-            console.log("\t\tPriceAfterMint:", decodeBigNumberWithDecimals(decodeSqrtPrice(poolSqrtPriceAfter)))
 
             return { token0, token1, pool, poolFunctions, poolBalance0, poolBalance1, swapTarget }
           }
@@ -270,11 +259,11 @@ describe('UniswapV3Pool swap tests', () => {
             ))
           })  
 
-          for (const testCase of poolCase.swapTests ?? DEFAULT_POOL_SWAP_TESTS) {
-            it(swapCaseToDescription(testCase), async () => {
-
-              console.log("\t\t ... swaping ...")
-  
+          it("swap and collect", async () => {
+            
+            console.log("\t ... swaping ...")
+            
+            for (const testCase of poolCase.swapTests ?? DEFAULT_POOL_SWAP_TESTS) {
               const tx = executeSwap(pool, testCase, poolFunctions)
 
               await tx;
@@ -284,14 +273,18 @@ describe('UniswapV3Pool swap tests', () => {
                 token1.balanceOf(pool.address),
                 (await pool.slot0()).sqrtPriceX96,
               ])
-              
-              console.log("\t\tpoolBalance0AfterSwap:", decodeBigNumberWithDecimals(poolBalance0AfterSwap))
-              console.log("\t\tpoolBalance1AfterSwap:", decodeBigNumberWithDecimals(poolBalance1AfterSwap))
-              console.log("\t\tSqrtPriceAfterSwap:", poolSqrtPriceSwap.toString())
-              console.log("\t\tPriceAfterSwap:", decodeBigNumberWithDecimals(decodeSqrtPrice(poolSqrtPriceSwap)))
+
+            }
+            console.log("\t ... burning & collecting ...")
   
-            })
-          }
+            for (const position of poolCase.positions) {
+              let txBurn = pool.burn(position.tickLower, position.tickUpper, position.liquidity)
+              console.log('\tBurn:', (await (await txBurn).wait()).gasUsed.toString())
+              let txCollect = pool.collect(wallet.address, position.tickLower, position.tickUpper, MaxUint128,MaxUint128)
+              console.log('\tCollect:', (await (await txCollect).wait()).gasUsed.toString())
+            }
+          })
+
         })
       
 
